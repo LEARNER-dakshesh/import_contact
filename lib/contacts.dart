@@ -14,6 +14,11 @@ class Contacts extends StatefulWidget {
 }
 
 class _ContactsState extends State<Contacts> {
+  bool isFavorite(Contact contact, Box box) {
+    // Check if the contact exists in the favorites box
+    return box.containsKey(contact.displayName);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -97,15 +102,28 @@ class _ContactsState extends State<Contacts> {
                                   name: contact.displayName,
                                   phoneNumber: contact.phones.isNotEmpty ? contact.phones[0].number : "",
                                 );
-                                box.add(favoriteContact.toJson());
-                                const snackbar=SnackBar(content: Text("Added Successfully"),backgroundColor: Colors.blue);
-                                ScaffoldMessenger.of(context).showSnackBar(snackbar);
-                                 //
-                                // await box.close();
-                                },
+
+                                final box = Hive.box('favorites');
+                                final existingNames = box.values.map((e) => e['name'] as String).toSet(); // Get existing names as a Set
+
+                                if (!existingNames.contains(favoriteContact.name)) { // Check if name already exists
+                                  box.add(favoriteContact.toJson());
+                                  final snackbar = SnackBar(
+                                    content: Text("Added Successfully"),
+                                    backgroundColor: Colors.blue,
+                                  );
+                                  ScaffoldMessenger.of(context).showSnackBar(snackbar);
+                                } else {
+                                  final snackbar = SnackBar(
+                                    content: Text("Contact is already a favorite"),
+                                    backgroundColor: Colors.red,
+                                  );
+                                  ScaffoldMessenger.of(context).showSnackBar(snackbar);
+                                }
+                              },
                               icon: Icon(
-                                Icons.favorite_border,
-                                color: Colors.red,
+                                 Icons.favorite ,
+                                color: Colors.red ,
                               ),
                             ),
                             subtitle: Column(
@@ -116,7 +134,6 @@ class _ContactsState extends State<Contacts> {
                                     : "No phone number"),
                               ],
                             ),
-                            // tileColor: isSelected ? Colors.grey.withOpacity(0.5) : null, // Change tile color if selected
                           );
                         },
                       );
@@ -156,8 +173,6 @@ class FavoriteContact {
       'phoneNumber': phoneNumber,
     };
   }
-
-  // Add a factory constructor to convert from JSON to FavoriteContact
   factory FavoriteContact.fromJson(Map<String, dynamic> json) {
     return FavoriteContact(
       name: json['name'],

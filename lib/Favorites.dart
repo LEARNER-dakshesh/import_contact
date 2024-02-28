@@ -32,6 +32,13 @@ class _FavoriteState extends State<Favorite> {
           return ListTile(
             title: Text(contact.name),
             subtitle: Text(contact.phoneNumber),
+            trailing: IconButton(
+              icon: Icon(Icons.delete),
+              onPressed: () {
+                // Call a method to delete the contact from Hive database
+                deleteContact(contact.name);
+              },
+            ),
           );
         },
       ),
@@ -58,13 +65,32 @@ class _FavoriteState extends State<Favorite> {
         // Handle unexpected data type, if needed
       }
     }
-    // contactsBox.close();
 
     setState(() {
       this.favoriteContacts = favoriteContacts;
     });
   }
+  void deleteContact(String contactName) async {
+    final contactsBox = await Hive.openBox('favorites');
 
+    // Find the contact with the matching name
+    final contactKey = contactsBox.keys.firstWhere((key) => contactsBox.get(key)['name'] == contactName);
+
+    if (contactKey != null) {
+      // Delete the contact from the box
+      await contactsBox.delete(contactKey);
+      final snackBar=SnackBar(content: Text("Deleting.....Reopen the page"),backgroundColor: Colors.red,);
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      setState(() {
+        retrieveContacts();
+        // Retrieve the updated list of contacts
+      });
+    } else {
+      // Handle the case where the contact is not found
+      print('Contact not found: $contactName');
+    }
+    await contactsBox.close();
+  }
 }
 
 class AnotherClass {
@@ -83,6 +109,7 @@ class AnotherClass {
     contactsBox.close();
   }
 }
+
 class FavoriteContact {
   String name;
   String phoneNumber;
@@ -96,4 +123,3 @@ class FavoriteContact {
     );
   }
 }
-

@@ -115,7 +115,6 @@ class FavoriteContact {
   String phoneNumber;
 
   FavoriteContact({required this.name, required this.phoneNumber});
-
   factory FavoriteContact.fromJson(Map<String, dynamic> json) {
     return FavoriteContact(
       name: json['name'],

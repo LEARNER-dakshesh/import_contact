@@ -4,12 +4,8 @@ import 'package:import_contact/contacts.dart';
 import 'package:telephony_sms/telephony_sms.dart';
 import 'package:velocity_x/velocity_x.dart';
 import 'package:import_contact/utils/colors.dart';
-import 'package:flutter/material.dart';
-import 'package:import_contact/contacts.dart';
-import 'package:velocity_x/velocity_x.dart';
 import 'package:import_contact/utils/colors.dart'; // Import geolocator package
 import 'package:hive/hive.dart';
-import 'package:import_contact/Favorites.dart';
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
 
@@ -131,13 +127,14 @@ class _HomeState extends State<Home> {
     // Implement your logic to notify the contact about the shared location
     String phoneNumber = contact.phoneNumber;
     final _telephonySMS = TelephonySMS();
-    await _telephonySMS.requestPermission(); // Request permission before sending SMS
+    await _telephonySMS.requestPermission();
+    String googleMapsUrl = "https://www.google.com/maps/search/?api=1&query=$latitude,$longitude";
+    String message1 = 'Emergency: My location is Latitude: $latitude ,Longitude : $longitude  Track me at : $googleMapsUrl';
     await _telephonySMS.sendSMS(
         phone: phoneNumber,
-        message: 'Emergency: I am at Latitude: $latitude, Longitude: $longitude');
+        message: message1);
   }
 }
-
 class FavoriteContact {
   String name;
   String phoneNumber;

@@ -14,9 +14,23 @@ class Contacts extends StatefulWidget {
 }
 
 class _ContactsState extends State<Contacts> {
-  bool isFavorite(Contact contact, Box box) {
-    // Check if the contact exists in the favorites box
-    return box.containsKey(contact.displayName);
+  TextEditingController _searchController = TextEditingController();
+  late List<Contact> _contacts = [];
+  late List<Contact> _filteredContacts = [];
+
+  @override
+  void initState() {
+    super.initState();
+    getContacts();
+  }
+
+  void _filterContacts(String query) {
+    List<Contact> filteredList = _contacts.where((contact) {
+      return contact.displayName.toLowerCase().contains(query.toLowerCase());
+    }).toList();
+    setState(() {
+      _filteredContacts = filteredList;
+    });
   }
 
   @override
@@ -28,35 +42,26 @@ class _ContactsState extends State<Contacts> {
         backgroundColor: AColors.primaryColor1,
       ),
       body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment : CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: EdgeInsets.only(top: 10.0, left: 16.0, right: 16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                TextButton(
-                  onPressed: () {},
-                  child: Text(
-                    "Contacts",
-                    style: TextStyle(fontSize: 30, color: Colors.black),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder:(context)=>Favorite()));
-                  },
-                  child: Text(
-                    "Favorites",
-                    style: TextStyle(fontSize: 30, color: Colors.black),
-                  ),
-                ),
-              ],
+          Padding(
+            padding: EdgeInsets.all(16.0),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                labelText: 'Search',
+                hintText: 'Search for a contact...',
+                prefixIcon: Icon(Icons.search),
+              ),
+              onChanged: (value) {
+                _filterContacts(value);
+              },
             ),
           ),
-          SizedBox(
-            height: 10,
-          ),
+          // SizedBox(
+          //   height: 50,
+          // ),
+
           Expanded(
             child: ValueListenableBuilder(
               valueListenable: Hive.box('favorites').listenable(),
@@ -80,10 +85,11 @@ class _ContactsState extends State<Contacts> {
                         child: Text("No contacts available"),
                       );
                     } else {
+                      _contacts = snapshot.data!;
                       return ListView.builder(
-                        itemCount: snapshot.data!.length,
+                        itemCount: _filteredContacts.length,
                         itemBuilder: (context, index) {
-                          Contact contact = snapshot.data![index];
+                          Contact contact = _filteredContacts[index];
                           return ListTile(
                             onTap: () {
                               // Toggle selection on tap
@@ -122,8 +128,8 @@ class _ContactsState extends State<Contacts> {
                                 }
                               },
                               icon: Icon(
-                                 Icons.favorite ,
-                                color: Colors.red ,
+                                Icons.favorite,
+                                color: Colors.red,
                               ),
                             ),
                             subtitle: Column(
@@ -143,6 +149,7 @@ class _ContactsState extends State<Contacts> {
               },
             ),
           ),
+         // Button :Text("Favorites Contacts ") onpressed :Favorite();
         ],
       ),
     );
